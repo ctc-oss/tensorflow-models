@@ -1,0 +1,13 @@
+FROM buildpack-deps:bionic
+
+RUN git clone --depth=1 https://github.com/tensorflow/models /tmp
+RUN apt update \
+ && apt install -y protobuf-compiler
+
+WORKDIR /tmp/research
+RUN protoc object_detection/protos/*.proto --python_out=.
+
+FROM scratch
+
+COPY --from=0 /tmp/research/slim /opt/models/research/slim
+COPY --from=0 /tmp/research/object_detection /opt/models/research/object_detection
